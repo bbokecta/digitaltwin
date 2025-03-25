@@ -36,4 +36,4 @@ def main(values):
 def send_message(message):
     client = SimpleUDPClient(ip, port)
     client.send_message("/my_address", message)
-    time.sleep(5)
+    # time.sleep(5)
