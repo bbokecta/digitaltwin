@@ -20,7 +20,7 @@
             // the link to your model provided by Teachable Machine export panel
             const URL = "https://teachablemachine.withgoogle.com/models/yYMPU6Rvf/";
             let model, webcam, ctx, labelContainer, maxPredictions, classPrediction;
-            let data = {};
+            let last_pose = "";
 
             async function init() {
                 const modelURL = URL + "model.json";
@@ -65,20 +65,40 @@
                 const prediction = await model.predict(posenetOutput);
 
                 for (let i = 0; i < maxPredictions; i++) {
+                    let poseValue = prediction[i].probability.toFixed(2);
+                    let poseName = prediction[i].className;
+                    
                     classPrediction =
-                        prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+                        poseName + ": " + poseValue;
                     labelContainer.childNodes[i].innerHTML = classPrediction;
-                    data[prediction[i].className] = prediction[i].probability.toFixed(2);
-                    console.log(data)
-                    sendData(data);
+                    
+                    if (poseValue > 0.75) {
+                        if(poseName != last_pose) {
+                            sendData(poseName)
+                            // console.log(last_pose)
+                            last_pose = poseName
+                        }
+                       
+                    }
+
+
+                    // data[prediction[i].className] = prediction[i].probability.toFixed(2);
+                    
                 }
 
+
+                // console.log(data)
+                // sendData(data);
+                
                 // finally draw the poses
                 drawPose(pose);
             }
 
-            function sendData(values) {
+            function sendData(poses) {
                 const endpoint = "http://127.0.0.1:5000/post";
+                let data = {
+                    'poses' : poses
+                }
 
                 fetch(endpoint, {
                     "method" : "POST",
